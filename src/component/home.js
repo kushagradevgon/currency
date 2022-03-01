@@ -9,18 +9,22 @@ import "./home.css";
 function Home() {
     const [amount, setAmount] = useState("")
     const [Amt, setAmt] = useState("");
-    const [Val, setVal] = useState("")
-    const [conv, setConv] = useState("")
+    const[currencyList, setCurrencyList]=useState("");
+    const [Val, setVal] = useState("");
+    const [conv, setConv] = useState("");
     const [tablerow, settablerow] = useState([]);
-
+    const[countryList,setCountryList]=useState("");
     const columns = [
         { field: 'id', headerName: 'ID', width: 100 },
-        { field: 'finalamount', headerName: 'Amount', width: 150 },
+        { field: 'name', headerName: 'Amount', width: 250 },
+        { field: 'finalamount', headerName: 'Amount', width: 100 },
 
     ];
 
     useEffect(() => {
         getCurrList();
+        getAmountList();
+    
     }, []);
     var data;
     var currkey;
@@ -39,33 +43,37 @@ function Home() {
             )
             .then((res) => {
                 data = res.data.currencies;
-                setVal(res.data.currencies);
+                
                 currkey = Object.keys(data);
                 setAmt(currkey);
-
+                setCurrencyList(res.data.currencies);
             })
             .catch((err) => {
                 alert(err);
             });
-        axios
-            .get(
-                `http://api.currencylayer.com/live?access_key=6c1bae4bdf29f70ef95ed3288daffded`
-            )
-            .then((res) => {
-                var data = res.data.quotes;
-                setConv(data);
-
-            })
-            .catch((err) => {
-                alert(err);
-            });
+        
 
 
     };
+    const getAmountList=()=>{
+        axios
+        .get(
+            `http://api.currencylayer.com/live?access_key=6c1bae4bdf29f70ef95ed3288daffded`
+        )
+        .then((res) => {
+            var data = res.data.quotes;
+            setConv(data);
+
+        })
+        .catch((err) => {
+            alert(err);
+        });
+    }
+    
     var items;
 
     const handleClick = (value) => {
-        setVal(String(value));
+        // setVal(String(value));
 
         var arr = Object.keys(conv)
         var x;
@@ -77,24 +85,26 @@ function Home() {
         }
         var currtodata = arr.at(x);
         var indollar = amount / conv[currtodata];
+        
         var convertedArray = [];
         for (let i = 0; i < arr.length; i++) {
             var currtodata2 = arr.at(i);
             var z = conv[currtodata2];
-            convertedArray[i] = z * indollar;
+            convertedArray[i] = (z * indollar).toFixed(2);
         }
 
         items = Amt.map((id, index) => {
             return {
                 id: id,
-                name: String(Val[id]),
+                name: String(currencyList[id]),
                 finalamount: convertedArray[index]
             }
         });
         settablerow(items);
+       
     };
 
-
+    
 
     return (
         <div className="home">
@@ -130,7 +140,7 @@ function Home() {
                 </div>
 
 
-            </form>{tablerow.length > 0 && <div style={{ height: 400, width: '25vw' }}>
+            </form>{tablerow.length > 0 && <div style={{ height: 400, width: '40vw' }}>
                 <DataGrid
                     rows={tablerow}
                     columns={columns}
